@@ -1,0 +1,7 @@
+d,john,smith,A,,,,,,,,,,,
+d,Edwin,Wright,C,,,,,,,,
+V,Gus, Marmalade,,,,,,,,,,,,
+N, nancy, drew,,,,,,,,,,,
+t, tommy, titmouse,,,,,,,,,,,,
+A, Whiny, Bossypants,,,,,,,,,,,
+I,James,Joyce,,5150,5,Noone special, 8838838838,Ins43234,blue shield,wright,alcoholism,5-15-19,7-12-19,
