@@ -142,15 +142,27 @@ public class AccessSQL {
             boolean available = this.checkRoom(roomCheck);
             System.out.println(available);
             if(available)  {
-                System.out.println("Patient " + data[2] + "not admitted, room " + data[5] +
-                "is occupied.");
+                System.out.println("Patient " + data[2] + " not admitted, room " + data[5] +
+                " is occupied.");
+                //If room is full, we abort this Inpatient
                 return;
             }
         } catch (Exception e)    {
             System.out.println(e + " checking room avail for Inpatient");
         }
 
+        String sql = "UPDATE Room SET isOccupied = true WHERE roomNumber = " + data[5] + ";";
 
+        try (Connection conn = this.connect();) {
+
+            PreparedStatement ps = conn.prepareStatement(sql);
+            //ps.setString(1, data[11]); //First ? in sql
+            ps.executeUpdate();
+            ps.close();
+
+        } catch (SQLException e) {
+            System.out.println(e.getMessage() + "Attempting to Mark Room as full");
+        }
 
         sql1 = "INSERT INTO InPatient(patientID, lastName, primDoc, emergencyContactName, emergencyContactNumber, " +
                 "diagnosis, room, admitDate, disDate) VALUES (?,?,?,?,?,?,?,?,?);";
