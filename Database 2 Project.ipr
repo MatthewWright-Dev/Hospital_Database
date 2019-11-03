@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="hospTest2.db" uuid="aedf7826-1aa0-45ab-8a80-4d99bf674607">
+    <data-source source="LOCAL" name="HospitalDB.sl3" uuid="80a2ce9b-69d9-45e7-9f80-749a9db29463">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
-      <jdbc-url>jdbc:sqlite:$USER_HOME$/Databases/hospTest2.db</jdbc-url>
+      <jdbc-url>jdbc:sqlite:C:/SQLite/HospitalDB.sl3</jdbc-url>
       <driver-properties>
         <property name="enable_load_extension" value="true" />
       </driver-properties>
@@ -150,7 +150,7 @@
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
   </component>
   <component name="dataSourceStorageLocal">
-    <data-source name="hospTest2.db" uuid="aedf7826-1aa0-45ab-8a80-4d99bf674607">
+    <data-source name="HospitalDB.sl3" uuid="80a2ce9b-69d9-45e7-9f80-749a9db29463">
       <database-info product="SQLite" version="3.25.1" jdbc-version="2.1" driver-name="SQLite JDBC" driver-version="3.25.1" dbms="SQLITE" exact-version="3.25.1" exact-driver-version="3.25">
         <identifier-quote-string>&quot;</identifier-quote-string>
       </database-info>
