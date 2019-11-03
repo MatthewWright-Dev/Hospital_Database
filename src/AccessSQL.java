@@ -265,11 +265,6 @@ public class AccessSQL {
 
     public void addDoctor(String[] data) {
 
-        for (String a: data
-             ) {
-            System.out.println(a);
-        }
-
 
         String sql1 = "INSERT INTO AssignDoctor(patient, additionalDoctor) VALUES (?,?);";
 
@@ -315,7 +310,7 @@ public class AccessSQL {
                 ps.close();
 
             } catch (SQLException e) {
-                System.out.println(e.getMessage() + "In addTreatment: Procedure");
+                System.out.println(e.getMessage() + "\nDuplicate not added, procedure already exists in DB");
             }
         }
 
