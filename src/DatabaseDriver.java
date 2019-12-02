@@ -2,16 +2,24 @@ import java.io.IOException;
 import java.util.Scanner;
 
 public class DatabaseDriver {
+
+    //DEFAULT FILE PATHS
+    private static String databasePath = "jdbc:sqlite:C:/SQLite/HospitalDB.db";
+    private static String filePathPerson = "C:/users/Matt/Dropbox/Java_Code/Database 2 Project/src/PersonDataFile1.txt";
+    private static String fileAddDoctor = "C:/users/Matt/Dropbox/Java_Code/Database 2 Project/src/AdditionalDoctor1.txt";
+    private static String fileTreatment = "C:/users/Matt/Dropbox/Java_Code/Database 2 Project/src/TreatmentData.txt";
+
+    //QUERIES
+    private static String[] queries = new String[27];
+
+
     public static void main(String[] args) throws IOException {
 
-        //DEFAULT FILE PATHS
-        String databasePath = "jdbc:sqlite:C:/SQLite/HospitalDB.db";
-        String filePathPerson = "C:/users/Matt/Dropbox/Java_Code/Database 2 Project/src/PersonDataFile1.txt";
-        String fileAddDoctor = "C:/users/Matt/Dropbox/Java_Code/Database 2 Project/src/AdditionalDoctor1.txt";
-        String fileTreatment = "C:/users/Matt/Dropbox/Java_Code/Database 2 Project/src/TreatmentData.txt";
+        //Populate the SQL Query Array
+        queries = DatabaseDriver.queryListGen();
 
         //Initialize Scanner that will receive input with spacing
-        Scanner user = new Scanner(System.in).useDelimiter("\n");
+        //Scanner user = new Scanner(System.in).useDelimiter("\n");
 
         //Print the Menu Header
         for (int i = 0; i < 30; i++)    {
@@ -30,28 +38,28 @@ public class DatabaseDriver {
         //Database File Selection
         System.out.println("DATABASE FILE PATH SELECTION:");
         String customFile = DatabaseDriver.customPath();
-        if (!(customFile.isEmpty()))    {
+        if (customFile != null)    {
             databasePath = customFile;
         }
 
         //Person Data File Selection
         System.out.println("PERSON DATA FILE PATH SELECTION:");
         customFile = DatabaseDriver.customPath();
-        if (!(customFile.isEmpty()))    {
+        if (customFile != null)    {
             filePathPerson = customFile;
         }
 
         //Additional Doctor Data File Selection
         System.out.println("ADDITIONAL DOCTOR DATA FILE PATH SELECTION:");
         customFile = DatabaseDriver.customPath();
-        if (!(customFile.isEmpty()))    {
+        if (customFile != null)    {
             fileAddDoctor = customFile;
         }
 
         //Additional Treatment Data File Selection
         System.out.println("ADDITIONAL TREATMENT DATA FILE PATH SELECTION:");
         customFile = DatabaseDriver.customPath();
-        if (!(customFile.isEmpty()))    {
+        if (customFile != null)    {
             fileTreatment = customFile;
         }
 
@@ -64,8 +72,8 @@ public class DatabaseDriver {
         data.doctorData(fileAddDoctor);
         data.treatmentData(fileTreatment);
 
-
-        DatabaseDriver.querieMenu(databasePath);
+        //Move to the Query Phase
+        DatabaseDriver.queryMenu();
 
 
     }
@@ -89,14 +97,47 @@ public class DatabaseDriver {
             System.out.println("Input Custom File Path:");
             result = user.next();
         }
-        user.close();
+        //user.close();
         return result;
     }
 
-    public static void querieMenu(String databasePath) {
-        Scanner user = new Scanner(System.in);
+    public static void queryMenu() {
         //Print the Menu Header
-
+        boolean cont = true;
+        System.out.println("\n*****  Phase 2: DATABASE QUERY *****");
+        while (cont) {
+            System.out.println("====================================");
+            System.out.println("Main Menu");
+            System.out.println("=============");
+            System.out.println("1 = Room Utilization\n" +
+                    "2 = Patient Information\n" +
+                    "3 = Diagnosis and Treatment Information\n" +
+                    "4 = Employee Information\n" +
+                    "5 = Exit Hospital Database System\n" +
+                    "=============\n" +
+                    "Please Make a Selection:");
+            int selection = menuChoice();
+            switch (selection) {
+                case 1:
+                    menuRoom();
+                    break;
+                case 2:
+                    System.out.println("2");
+                    break;
+                case 3:
+                    System.out.println("3");
+                    break;
+                case 4:
+                    System.out.println("4");
+                    break;
+                case 5:
+                    System.out.println("============\n\n" +
+                            "Goodbye........");
+                    System.exit(0);
+                default:
+                    System.out.println("Invalid Input.....");
+            }
+        }
 
         /*
         AccessSQL printQuerie = new AccessSQL(databasePath);
@@ -106,11 +147,55 @@ public class DatabaseDriver {
         }
 
          */
-
-
     }
+
+    public static void menuRoom()  {
+        while (true) {
+            System.out.println("====================================");
+            System.out.println("Room Query Menu");
+            System.out.println("=============");
+            System.out.println("1 = List of Occupied Rooms\n" +
+                    "2 = List of Unoccupied Rooms\n" +
+                    "3 = List of All Rooms with Patient Names and Admission Dates\n" +
+                    "4 = Main Menu\n" +
+                    "=============\n" +
+                    "Please Make a Selection:");
+            int selection = menuChoice();
+            switch (selection) {
+                case 1:
+                    simpleQuery(queries[0]);
+                    break;
+                case 2:
+                    simpleQuery(queries[1]);
+                    break;
+                case 3:
+                    simpleQuery(queries[2]);
+                    break;
+                case 4:
+                    return;
+                default:
+                    System.out.println("Invalid Input.....");
+            }
+        }
+    }
+
+    public static int menuChoice()    {
+        Scanner user = new Scanner(System.in);
+        return user.nextInt();
+    }
+
+    public static void simpleQuery(String sql) {
+        AccessSQL printQuerie = new AccessSQL(databasePath);
+        printQuerie.sqlQuery(sql);
+        System.out.println("Press 1 to Continue,  2 to Exit");
+        if (menuChoice() == 2)  {
+            System.out.println("\n\nGoodbye........");
+            System.exit(0);
+        }
+    }
+
     public static String[] queryListGen()   {
-        String[] queries = new String[27];
+        //String[] queries = new String[27];
         // 1. Room Utilization
         queries[0] = "SELECT room, firstName, lastName, admitDate FROM InPatient LEFT JOIN Room ON Room.roomNumber=InPatient.room WHERE Room.isEmpty=1;";
         queries[1] = "SELECT * FROM Room WHERE isEmpty = 0;";
