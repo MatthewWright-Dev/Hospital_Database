@@ -1,36 +1,114 @@
 import java.io.IOException;
+import java.util.Scanner;
 
 public class DatabaseDriver {
     public static void main(String[] args) throws IOException {
 
-        //String databasePath = "jdbc:sqlite:C:/users/Matt/Databases/hospTest2.db";
-        /*
-        BuildDB newDB = new BuildDB("C:/users/Matt/Dropbox/Java_Code/Database 2 Project/src/Tables.txt" , "test.sq3");
-        newDB.createNewDatabase(newDB.dbName);
-
-
-         */
-
+        //DEFAULT FILE PATHS
         String databasePath = "jdbc:sqlite:C:/SQLite/HospitalDB.db";
         String filePathPerson = "C:/users/Matt/Dropbox/Java_Code/Database 2 Project/src/PersonDataFile1.txt";
         String fileAddDoctor = "C:/users/Matt/Dropbox/Java_Code/Database 2 Project/src/AdditionalDoctor1.txt";
         String fileTreatment = "C:/users/Matt/Dropbox/Java_Code/Database 2 Project/src/TreatmentData.txt";
+
+        //Initialize Scanner that will receive input with spacing
+        Scanner user = new Scanner(System.in).useDelimiter("\n");
+
+        //Print the Menu Header
+        for (int i = 0; i < 30; i++)    {
+            System.out.print("=");
+        }
+        System.out.println();
+        System.out.println("HOSPITAL DATABASE ACCESS");
+        for (int i = 0; i < 30; i++)    {
+            System.out.print("=");
+        }
+        System.out.println();
+
+        System.out.println("*****  Phase 1: DATA IMPORT *****" +
+                "\n\nYou will now be prompted to choose DEFAULT or CUSTOM file paths for the data import:\n");
+
+        //Database File Selection
+        System.out.println("DATABASE FILE PATH SELECTION:");
+        String customFile = DatabaseDriver.customPath();
+        if (!(customFile.isEmpty()))    {
+            databasePath = customFile;
+        }
+
+        //Person Data File Selection
+        System.out.println("PERSON DATA FILE PATH SELECTION:");
+        customFile = DatabaseDriver.customPath();
+        if (!(customFile.isEmpty()))    {
+            filePathPerson = customFile;
+        }
+
+        //Additional Doctor Data File Selection
+        System.out.println("ADDITIONAL DOCTOR DATA FILE PATH SELECTION:");
+        customFile = DatabaseDriver.customPath();
+        if (!(customFile.isEmpty()))    {
+            fileAddDoctor = customFile;
+        }
+
+        //Additional Treatment Data File Selection
+        System.out.println("ADDITIONAL TREATMENT DATA FILE PATH SELECTION:");
+        customFile = DatabaseDriver.customPath();
+        if (!(customFile.isEmpty()))    {
+            fileTreatment = customFile;
+        }
+
+        //Import 3 files to database....
+        System.out.println("\nIMPORTING THE FOLLOWING FILES:" +
+                "\n" + filePathPerson + "\n" + fileAddDoctor + "\n" + fileTreatment);
 
         DataParser data = new DataParser(filePathPerson, fileAddDoctor, fileTreatment, databasePath);
         data.personData(filePathPerson);
         data.doctorData(fileAddDoctor);
         data.treatmentData(fileTreatment);
 
-        AccessSQL printQuerie = new AccessSQL(databasePath);
-        String[] queries = DatabaseDriver.queryListGen();
-        //String testQ = "SELECT * FROM InPatient;";
-        for (int i = 0; i < 27; i++)    {
-            printQuerie.sqlQuery(queries[i]);
-        }
+
+        DatabaseDriver.querieMenu(databasePath);
 
 
     }
 
+    public static String customPath()   {
+        //Initialize Scanner that will receive input with spacing
+        Scanner user = new Scanner(System.in).useDelimiter("\n");
+        boolean loop = true;
+        String result = null;
+        int userIn = 0;
+        while (loop) {
+            loop = false;
+            System.out.println("Press 1 for DEFAULT path, 2 for CUSTOM");
+            userIn = user.nextInt();
+            if (userIn != 1 && userIn != 2) {
+                loop = true;
+                System.out.println("Error: only 1 or 2 are valid responses");
+            }
+        }
+        if (userIn == 2 ) {
+            System.out.println("Input Custom File Path:");
+            result = user.next();
+        }
+        user.close();
+        return result;
+    }
+
+    public static void querieMenu(String databasePath) {
+        Scanner user = new Scanner(System.in);
+        //Print the Menu Header
+
+
+        /*
+        AccessSQL printQuerie = new AccessSQL(databasePath);
+        String[] queries = DatabaseDriver.queryListGen();
+        for (int i = 0; i < 27; i++)    {
+            printQuerie.sqlQuery(queries[i]);
+        }
+
+         */
+
+
+    }
     public static String[] queryListGen()   {
         String[] queries = new String[27];
         // 1. Room Utilization
