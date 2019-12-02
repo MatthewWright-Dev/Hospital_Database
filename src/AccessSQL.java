@@ -50,7 +50,7 @@ public class AccessSQL {
             //Print the Column Names as Header
             for (int i = 1; i <= colCount; i++) {
                 String col_name = md.getColumnName(i);
-                System.out.print(String.format("%-24s|", col_name));
+                System.out.print(String.format("%-24s ", col_name));
                 //System.out.print(col_name + "  |  ");
                 headerChars += col_name.length();
             }
@@ -85,6 +85,7 @@ public class AccessSQL {
                 }
                 System.out.println();
             }
+            System.out.println();
 
 
         } catch (SQLException e) {
