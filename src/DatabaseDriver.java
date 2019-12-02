@@ -179,6 +179,65 @@ public class DatabaseDriver {
         }
     }
 
+    public static void menuPatient ()   {
+        while (true) {
+            System.out.println("====================================");
+            System.out.println("Ptient Information Query Menu");
+            System.out.println("=============");
+            System.out.println("1 = List of Patients\n" +
+                    "2 = List of Patients Currently Admitted\n" +
+                    "3 = List of Inpatients Within Date Range\n" +
+                    "4 = List of Patients Discharged Within Date Range" +
+                    "5 = Current Outpatients" +
+                    "6 = Outpatients Within Date Range" +
+                    "7 = Specific Inpatient/Diagnosis History" +
+                    "8 = Specific Patient Treatments" +
+                    "9 = History of Patients admitted Within 30 days of Last Discharge" +
+                    "10 = Complete Patient History with Admission Details" +
+                    "11 = Main Menu\n" +
+                    "=============\n" +
+                    "Please Make a Selection:");
+            int selection = menuChoice();
+            switch (selection) {
+                case 1:
+                    simpleQuery(queries[3]);
+                    break;
+                case 2:
+                    simpleQuery(queries[4]);
+                    break;
+                case 3:
+                    simpleQuery(queries[5]);
+                    break;
+                case 4:
+                    simpleQuery(queries[6]);
+                    break;
+                case 5:
+                    simpleQuery(queries[7]);
+                    break;
+                case 6:
+                    simpleQuery(queries[8]);
+                    break;
+                case 7:
+                    simpleQuery(queries[9]);
+                    break;
+                case 8:
+                    simpleQuery(queries[10]);
+                    break;
+                case 9:
+                    simpleQuery(queries[11]);
+                    break;
+                case 10:
+                    simpleQuery(queries[12]);
+                    break;
+                case 11:
+                    return;
+
+                default:
+                    System.out.println("Invalid Input.....");
+            }
+        }
+    }
+
     public static int menuChoice()    {
         Scanner user = new Scanner(System.in);
         return user.nextInt();
