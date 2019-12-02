@@ -26,9 +26,52 @@ public class AccessSQL {
         return conn;
     }
 
+    public void sqlQuery(String sql) {
+        try (Connection conn = this.connect();
+            Statement stmt  = conn.createStatement();
+            ResultSet rs    = stmt.executeQuery(sql)){
+
+            printResult(rs);
+            //return true;
+
+        }catch (SQLException s) {
+            System.out.println(s + " tried sqlQuerie... whooooop");
+            //return false;
+        }
+    }
+
+    public static void printResult(ResultSet rs) {
+        try {
+            ResultSetMetaData md = rs.getMetaData();
+            int colCount = md.getColumnCount();
+            int headerChars = 0;
+
+            //Print the Column Names as Header
+            for (int i = 1; i <= colCount; i++) {
+                String col_name = md.getColumnName(i);
+                System.out.print(String.format("%-24s|", col_name));
+                //System.out.print(col_name + "  |  ");
+                headerChars += col_name.length();
+            }
+
+            //Print line under column names
+            System.out.println();
+            int e = md.getColumnCount() * 25;
+            //e = (e * 5) + headerChars;
+            for(int i = 0; i < e; i++)  {
+                System.out.print("-");
+            }
+            System.out.println();
+
+
+        } catch (SQLException e) {
+            System.out.println("tried to print column name result in printResult");
+        }
+    }
 
     private boolean checkRoom(String sql){
         //String sql = "SELECT snum, sname FROM suppliers;";
+        //String roomCheck = "SELECT isEmpty FROM Room WHERE roomNumber = " + data[5] + ";";
 
         try (Connection conn = this.connect();
              Statement stmt  = conn.createStatement();
@@ -46,7 +89,26 @@ public class AccessSQL {
         return true;
     }
 
+    private boolean isInpatient(String sql){
+        //String sql = "SELECT snum, sname FROM suppliers;";
 
+        try (Connection conn = this.connect();
+             Statement stmt  = conn.createStatement();
+             ResultSet rs    = stmt.executeQuery(sql))   {
+
+            // extract the boolean from the result set
+            while (rs.next()) {
+                boolean name = rs.getBoolean("inHospital");// +  "\t" +
+                return name;
+            }
+
+        } catch (SQLException e) {
+            System.out.println(e.getMessage() + "In isInpatient");
+        }
+        return false;
+    }
+
+    /*
     public void insertDoctor(String[] data) {
 
         String sql1 = "INSERT INTO Doctor(firstName, lastName, admitting) VALUES (?,?,?);";
@@ -79,9 +141,13 @@ public class AccessSQL {
 
     }
 
+
+     */
+
+
     public void insertEmployee(String[] data) {
 
-        String sql1 = "INSERT INTO Employee(firstName, lastName, title) VALUES (?,?,?);";
+        String sql1 = "INSERT INTO Employee(firstName, lastName, title, admitting) VALUES (?,?,?,?);";
 
         String job;
         // Provide the correct job title
@@ -97,8 +163,16 @@ public class AccessSQL {
         else if (data[0].equals("T"))    {
             job = "Technician";
         }
+        else if (data[0].equals("D"))    {
+            job = "Doctor";
+        }
         else {
             job = "N/A";
+        }
+
+        int admit = 0;
+        if (data.length > 3 && data[3].equals("A"))    {
+            admit = 1;
         }
 
         try (Connection conn = this.connect();) {
@@ -108,6 +182,7 @@ public class AccessSQL {
             ps.setString(1, data[1]); //First ? in sql
             ps.setString(2, data[2]); //Second ? in sql
             ps.setString(3, job); //Second ? in sql
+            ps.setInt(4, admit);
             ps.executeUpdate();
 
             ps.close();
@@ -118,11 +193,10 @@ public class AccessSQL {
 
     }
 
-    public void insertInpatient(String[] data) {
-
+    private void addDiagnosis(String[] data) {
         //add the diagnosis to Diagnosis table
         String sql1 = "INSERT INTO Diagnosis(disease) VALUES (?);";
-
+        boolean notNew = false;
         try (Connection conn = this.connect();) {
 
             PreparedStatement ps = conn.prepareStatement(sql1);
@@ -131,10 +205,66 @@ public class AccessSQL {
             ps.close();
 
         } catch (SQLException e) {
-            System.out.println(e.getMessage() + "In Inpatient Diagnosis");
+            //System.out.println(e.getMessage() + "In Inpatient Diagnosis");
+            notNew = true;
+
         }
 
-        //System.out.println(data.length);
+        //INCREMENT THE DIAGNOSIS COUNT
+        if (notNew) {
+
+            try (Connection conn = this.connect();) {
+                String sql = "UPDATE Diagnosis SET cases = cases + 1 WHERE disease = '" + data[11] + "'";
+                PreparedStatement ps = conn.prepareStatement(sql);
+                //ps.executeUpdate(sql); //First ? in sql
+                ps.executeUpdate();
+                ps.close();
+
+            } catch (SQLException a) {
+                System.out.println("attempted to INC Diagnosis Count");
+            }
+        }
+    }
+
+    private void diagnose(String[] data) {
+        //add the diagnosis to Diagnosis table
+        String sql1 = "INSERT INTO Diagnose(doctor, disease) VALUES (?,?);";
+        boolean notNew = false;
+        try (Connection conn = this.connect();) {
+
+            PreparedStatement ps = conn.prepareStatement(sql1);
+            ps.setString(1, data[10]); //First ? in sql
+            ps.setString(2, data[11]); //First ? in sql
+            ps.executeUpdate();
+            ps.close();
+
+        } catch (SQLException e) {
+            //System.out.println(e.getMessage() + "In Diagnose (initial)");
+            notNew = true;
+        }
+
+        //INCREMENT THE DIAGNOSE COUNT
+        if (notNew) {
+
+            try (Connection conn = this.connect();) {
+                String sql = "UPDATE Diagnose SET cases = cases + 1 WHERE doctor = '" + data[10] + "' AND disease = '" + data[11] + "';";
+                PreparedStatement ps = conn.prepareStatement(sql);
+                //ps.executeUpdate(sql); //First ? in sql
+                ps.executeUpdate();
+                ps.close();
+
+            } catch (SQLException a) {
+                System.out.println("attempted to INC Diagnose Count");
+            }
+        }
+    }
+
+    public void insertInpatient(String[] data) {
+
+
+        addDiagnosis(data);
+        diagnose(data);
+
         //IF the Inpatient does not have a discharge data, the room must be checked/marked.
         if (data.length < 14) {
             //Check if the room is empty
@@ -164,21 +294,26 @@ public class AccessSQL {
                 System.out.println(e.getMessage() + "Attempting to Mark Room as full");
             }
 
-            sql1 = "INSERT INTO InPatient(patientID, lastName, primDoc, emergencyContactName, emergencyContactNumber, " +
-                    "diagnosis, room, admitDate) VALUES (?,?,?,?,?,?,?,?);";
+            String sql1 = "INSERT INTO InPatient(patientID, lastName, firstName, primDoc, emergencyContactName, emergencyContactNumber, " +
+                    "insNum, insName, diagnosis, room, admitDate, inHospital) VALUES (?,?,?,?,?,?,?,?,?,?,?,?);";
 
             try (Connection conn = this.connect();) {
 
                 PreparedStatement ps = conn.prepareStatement(sql1);
 
                 ps.setString(1, data[4]);
+                ps.setString(1, data[4]);
                 ps.setString(2, data[2]);
-                ps.setString(3, data[10]);
-                ps.setString(4, data[6]);
-                ps.setString(5, data[8]);
-                ps.setString(6, data[11]);
-                ps.setString(7, data[5]);
-                ps.setString(8, data[12]);
+                ps.setString(3, data[1]);
+                ps.setString(4, data[10]);
+                ps.setString(5, data[6]);
+                ps.setString(6, data[7]);
+                ps.setString(7, data[8]);
+                ps.setString(8, data[9]);
+                ps.setString(9, data[11]);
+                ps.setString(10, data[5]);
+                ps.setString(11, data[12]);
+                ps.setString(12, "1");
 
 
                 ps.executeUpdate();
@@ -186,15 +321,15 @@ public class AccessSQL {
                 ps.close();
 
             } catch (SQLException e) {
-                System.out.println(e.getMessage() + "In Inpatient Diagnosis");
+                System.out.println(e.getMessage() + "Adding past Impatient");
             }
 
 
         }
         else {
 
-            sql1 = "INSERT INTO InPatient(patientID, lastName, primDoc, emergencyContactName, emergencyContactNumber, " +
-                    "diagnosis, room, admitDate, disDate) VALUES (?,?,?,?,?,?,?,?,?);";
+            String sql1 = "INSERT INTO InPatient(patientID, lastName, firstName, primDoc, emergencyContactName, emergencyContactNumber, " +
+                    "insNum, insName, diagnosis, room, admitDate, disDate, inHospital) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?);";
 
             try (Connection conn = this.connect();) {
 
@@ -202,20 +337,24 @@ public class AccessSQL {
 
                 ps.setString(1, data[4]);
                 ps.setString(2, data[2]);
-                ps.setString(3, data[10]);
-                ps.setString(4, data[6]);
-                ps.setString(5, data[8]);
-                ps.setString(6, data[11]);
-                ps.setString(7, data[5]);
-                ps.setString(8, data[12]);
-                ps.setString(9, data[13]);
+                ps.setString(3, data[1]);
+                ps.setString(4, data[10]);
+                ps.setString(5, data[6]);
+                ps.setString(6, data[7]);
+                ps.setString(7, data[8]);
+                ps.setString(8, data[9]);
+                ps.setString(9, data[11]);
+                ps.setString(10, data[5]);
+                ps.setString(11, data[12]);
+                ps.setString(12, data[13]);
+                ps.setString(13, "0");
 
                 ps.executeUpdate();
 
                 ps.close();
 
             } catch (SQLException e) {
-                System.out.println(e.getMessage() + "In Inpatient Diagnosis");
+                System.out.println(e.getMessage() + "Adding Past Inpatient");
             }
         }
 
@@ -223,23 +362,12 @@ public class AccessSQL {
 
     public void insertOutpatient(String[] data) {
 
-        //add the diagnosis
-        String sql1 = "INSERT INTO Diagnosis(disease) VALUES (?);";
-
-        try (Connection conn = this.connect();) {
-
-            PreparedStatement ps = conn.prepareStatement(sql1);
-            ps.setString(1, data[11]); //First ? in sql
-            ps.executeUpdate();
-            ps.close();
-
-        } catch (SQLException e) {
-            System.out.println(e.getMessage() + "In Outpatient Diagnosis");
-        }
+        //ADD THE DIAGNOSIS
+        addDiagnosis(data);
+        diagnose(data);
 
 
-
-        sql1 = "INSERT INTO OutPatient(patientID, lastName, firstName, primDoc, emergencyContactName, emergencyContactNumber, diagnosis) VALUES (?,?,?,?,?,?,?);";
+        String sql1 = "INSERT INTO OutPatient(patientID, lastName, firstName, primDoc, emergencyContactName, emergencyContactNumber, insNum, insName, diagnosis) VALUES (?,?,?,?,?,?,?,?,?);";
 
         try (Connection conn = this.connect();) {
 
@@ -251,14 +379,16 @@ public class AccessSQL {
             ps.setString(4, data[10]);
             ps.setString(5, data[6]);
             ps.setString(6, data[7]);
-            ps.setString(7, data[11]);
+            ps.setString(7, data[8]);
+            ps.setString(8, data[9]);
+            ps.setString(9, data[11]);
 
             ps.executeUpdate();
 
             ps.close();
 
         } catch (SQLException e) {
-            System.out.println(e.getMessage() + "In Inpatient Diagnosis");
+            System.out.println(e.getMessage() + "Adding Outpatient");
         }
 
     }
@@ -286,55 +416,57 @@ public class AccessSQL {
     }
     public void addTreatment(String[] data) {
 
-        //ADD THE MEDICATION / PROCEDURE
-        if( data[2].equals("M"))    {
-            String sql1 = "INSERT INTO Medication(medName) VALUES (?);";
-            try (Connection conn = this.connect();) {
 
-                PreparedStatement ps = conn.prepareStatement(sql1);
-                ps.setString(1, data[3]); //First ? in sql
+        String sql1 = "INSERT INTO Procedure(procedureName, type) VALUES (?,?);";
+        boolean proc = false;
+        try (Connection conn = this.connect();) {
+
+            PreparedStatement ps = conn.prepareStatement(sql1);
+            ps.setString(1, data[3]); //First ? in sql
+            ps.setString(2, data[2]);
+            ps.executeUpdate();
+            ps.close();
+
+        } catch (SQLException e) {
+                //System.out.println(e.getMessage() + "\nDuplicate not added, procedure already exists in DB");
+                proc = true;
+        }
+
+        if(proc) {
+            try (Connection conn = this.connect();) {
+                String sql = "UPDATE Procedure SET cases = cases + 1 WHERE procedureName = '" + data[3] + "'";
+                PreparedStatement ps = conn.prepareStatement(sql);
+                //ps.executeUpdate(sql); //First ? in sql
                 ps.executeUpdate();
                 ps.close();
 
-            } catch (SQLException e) {
-                System.out.println(e.getMessage() + "In addTreatment: Medication");
+            } catch (SQLException a) {
+                System.out.println("attempted to INC Procedure Count");
             }
         }
-        else   {
-            String sql1 = "INSERT INTO Procedure(procedureName) VALUES (?);";
-            try (Connection conn = this.connect();) {
-
-                PreparedStatement ps = conn.prepareStatement(sql1);
-                ps.setString(1, data[3]); //First ? in sql
-                ps.executeUpdate();
-                ps.close();
-
-            } catch (SQLException e) {
-                System.out.println(e.getMessage() + "\nDuplicate not added, procedure already exists in DB");
-            }
-        }
+        //CHECK IF CURRENT INPATIENT
+        String name = "SELECT inHospital FROM InPatient WHERE lastName = '" + data[0] + "';";
+        boolean result = isInpatient(name);
 
         //ADD THE TREATMENT
-        String sql1 = "INSERT INTO Treatment(docRequest, patientName, medName, procedureName, time) VALUES (?,?,?,?,?);";
+        sql1 = "INSERT INTO Treatment(patientName, docRequest, treatType, treatment, time, isInpatient) VALUES (?,?,?,?,?,?);";
 
         try (Connection conn = this.connect();) {
 
             PreparedStatement ps = conn.prepareStatement(sql1);
 
-            ps.setString(1, data[1]);
-            ps.setString(2, data[0]);
-            //MEDS OR PROCEDURE??
-            if(data[2].equals("M")) {
-                ps.setString(3, data[3]);
-                ps.setString(4, null);
-
+            ps.setString(1, data[0]);
+            ps.setString(2, data[1]);
+            ps.setString(3, data[2]);
+            ps.setString(4, data[3]);
+            ps.setString(5, data[4]);
+            //Inpatient currently in hospital??
+            if(result) {
+                ps.setString(6, "1");
             }
             else {
-                ps.setString(4, data[3]);
-                ps.setString(3, null);
+                ps.setString(6, "0");
             }
-
-            ps.setString(5, data[4]);
 
             ps.executeUpdate();
 
@@ -344,39 +476,41 @@ public class AccessSQL {
             System.out.println(e.getMessage() + " In AddTreatment");
         }
 
-    }
-
-/*
-    public void insertDoctor(String ssn, String firstName, String lastName, String gender, String year, String month, String day) {
-
-        //This is BAD!  Do NOT use!
-        //This allows SQL injection attacks!
-        //String BADsql = "INSERT INTO Suppliers(snum, sname, status, city) VALUES (" + snum + ","+ sname + ","+ status + "," + city + ");";
-
-        //This is much better!
-        String sql = "INSERT INTO Person(ssn, firstName, lastName, gender, year, month, day) VALUES (?,?,?,?,?,?,?);";
-
+        //ADD TO Treats TABLE
+        boolean treated =  false;
+        sql1 = "INSERT INTO Treat(doctor, treatment) VALUES (?,?);";
         try (Connection conn = this.connect();) {
 
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setString(1, ssn); //First ? in sql
-            ps.setString(2, firstName); //Second ? in sql
-            ps.setString(3, lastName); //Third ? in sql
-            ps.setString(4, gender); //Fourth ? in sql
-            ps.setString(5, year); //First ? in sql
-            ps.setString(6, month); //First ? in sql
-            ps.setString(7, day); //First ? in sql
+            PreparedStatement ps = conn.prepareStatement(sql1);
+
+            ps.setString(1, data[1]);
+            ps.setString(2, data[3]);
+
             ps.executeUpdate();
             ps.close();
 
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            //System.out.println(e.getMessage() + " In Add to Treats under Treatment");
+            treated = true;
+        }
+
+        //INCREMENT THE TREATMENT
+        if (treated)    {
+            try (Connection conn = this.connect();) {
+                String sql = "UPDATE Treat SET cases = cases + 1 WHERE doctor = '" + data[1] + "' AND treatment = '" + data[3] + "';";
+                PreparedStatement ps = conn.prepareStatement(sql);
+                //ps.executeUpdate(sql); //First ? in sql
+                ps.executeUpdate();
+                ps.close();
+
+            } catch (SQLException a) {
+                System.out.println("attempted to INC Treat Count");
+            }
+
         }
 
     }
 
-
- */
 
 
 }
