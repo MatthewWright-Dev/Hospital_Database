@@ -30,14 +30,7 @@ public class DataParser {
             while ((line = br.readLine()) != null)  {
                 lineCount++;
                 String[] data = line.split(",");
-                /*
-                if(data.length < 15)    {
-                    System.out.println("Invalid input at Line " + lineCount
-                    + " of the Person_Data_File. There muse be 13 commas total on the line.");
-                    System.exit(0);
-                }
 
-                 */
                 for (int i = 0; i < data.length; i++)   {
                     data[i] = data[i].trim();
                     data[i] = data[i].toUpperCase();
@@ -45,7 +38,7 @@ public class DataParser {
 
                 char pers = data[0].charAt(0);
                 switch (pers)   {
-                    case 'D': app.insertDoctor(data);
+                    case 'D': app.insertEmployee(data);
                         break;
                     case 'V': app.insertEmployee(data);
                         break;

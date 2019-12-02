@@ -21,6 +21,9 @@ public class DatabaseDriver {
         data.doctorData(fileAddDoctor);
         data.treatmentData(fileTreatment);
 
+        AccessSQL queries = new AccessSQL(databasePath);
+        String testQ = "SELECT * FROM InPatient;";
+        queries.sqlQuery(testQ);
 
 
     }

@@ -45,6 +45,7 @@ public class AccessSQL {
             ResultSetMetaData md = rs.getMetaData();
             int colCount = md.getColumnCount();
             int headerChars = 0;
+            int rows = 0;
 
             //Print the Column Names as Header
             for (int i = 1; i <= colCount; i++) {
@@ -63,9 +64,31 @@ public class AccessSQL {
             }
             System.out.println();
 
+            //Retrieve the number of rows in this query result
+            //PROB NOT NECESSARY
+            /*
+            if(rs.last()){
+                rows = rs.getRow();
+                rs.beforeFirst();
+            }
+            else    {
+                System.out.println("Result Set is Empty. Sorry....");
+                return;
+            }
+             */
+
+
+            //print each line of the table
+            while (rs.next()) {
+                for (int i = 1; i <= colCount; i++)  {
+                    System.out.print(String.format("%-24s ", rs.getString(i)));
+                }
+                System.out.println();
+            }
+
 
         } catch (SQLException e) {
-            System.out.println("tried to print column name result in printResult");
+            System.out.println(e + "tried to print column name result in printResult");
         }
     }
 
