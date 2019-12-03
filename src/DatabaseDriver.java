@@ -18,9 +18,6 @@ public class DatabaseDriver {
         //Populate the SQL Query Array
         queries = DatabaseDriver.queryListGen();
 
-        //Initialize Scanner that will receive input with spacing
-        //Scanner user = new Scanner(System.in).useDelimiter("\n");
-
         //Print the Menu Header
         for (int i = 0; i < 30; i++)    {
             System.out.print("=");
@@ -32,45 +29,70 @@ public class DatabaseDriver {
         }
         System.out.println();
 
-        System.out.println("*****  Phase 1: DATA IMPORT *****" +
-                "\n\nYou will now be prompted to choose DEFAULT or CUSTOM file paths for the data import:\n");
+        System.out.println("\n***** Phase 1:  DATA IMPORT *****\n\n" +
+                "Current default file paths are: \n\n" +
+                "Database File Path:                 " + databasePath + "\n" +
+                "Person Data File:                   " + filePathPerson + "\n" +
+                "Additional Doctor File Path:        " + fileAddDoctor + "\n" +
+                "Treatment File Path:                " + fileTreatment + "\n" +
+                "==========================\n" +
+                "1 = Continue With Default File Paths\n" +
+                "2 = Enter Custom File Paths\n" +
+                "==========================\n" +
+                "Please Make A Selection:");
+        int selection = menuChoice();
 
-        //Database File Selection
-        System.out.println("DATABASE FILE PATH SELECTION:");
-        String customFile = DatabaseDriver.customPath();
-        if (customFile != null)    {
-            databasePath = customFile;
-        }
+        if (selection == 2) {
+            //Database File Selection
+            System.out.println("DATABASE FILE PATH SELECTION:");
+            String customFile = DatabaseDriver.customPath();
+            if (customFile != null) {
+                databasePath = customFile;
+            }
 
-        //Person Data File Selection
-        System.out.println("PERSON DATA FILE PATH SELECTION:");
-        customFile = DatabaseDriver.customPath();
-        if (customFile != null)    {
-            filePathPerson = customFile;
-        }
+            //Person Data File Selection
+            System.out.println("PERSON DATA FILE PATH SELECTION:");
+            customFile = DatabaseDriver.customPath();
+            if (customFile != null) {
+                filePathPerson = customFile;
+            }
 
-        //Additional Doctor Data File Selection
-        System.out.println("ADDITIONAL DOCTOR DATA FILE PATH SELECTION:");
-        customFile = DatabaseDriver.customPath();
-        if (customFile != null)    {
-            fileAddDoctor = customFile;
-        }
+            //Additional Doctor Data File Selection
+            System.out.println("ADDITIONAL DOCTOR DATA FILE PATH SELECTION:");
+            customFile = DatabaseDriver.customPath();
+            if (customFile != null) {
+                fileAddDoctor = customFile;
+            }
 
-        //Additional Treatment Data File Selection
-        System.out.println("ADDITIONAL TREATMENT DATA FILE PATH SELECTION:");
-        customFile = DatabaseDriver.customPath();
-        if (customFile != null)    {
-            fileTreatment = customFile;
+            //Additional Treatment Data File Selection
+            System.out.println("ADDITIONAL TREATMENT DATA FILE PATH SELECTION:");
+            customFile = DatabaseDriver.customPath();
+            if (customFile != null) {
+                fileTreatment = customFile;
+            }
         }
 
         //Import 3 files to database....
         System.out.println("\nIMPORTING THE FOLLOWING FILES:" +
-                "\n" + filePathPerson + "\n" + fileAddDoctor + "\n" + fileTreatment);
+                "\n" + filePathPerson + "\n" + fileAddDoctor + "\n" + fileTreatment + "\n" + "..............." );
 
         DataParser data = new DataParser(filePathPerson, fileAddDoctor, fileTreatment, databasePath);
         data.personData(filePathPerson);
         data.doctorData(fileAddDoctor);
         data.treatmentData(fileTreatment);
+
+        System.out.println("........." +
+                "\nImport Complete\n");
+
+        System.out.println("Print All Tables?\n" +
+                "1 = Yes\n" +
+                "2 = No\n" +
+                "===========\n" +
+                "Please Make A Selection:");
+        selection = menuChoice();
+        if (selection == 1) {
+            printTables();
+        }
 
         //Move to the Query Phase
         DatabaseDriver.queryMenu();
@@ -99,6 +121,30 @@ public class DatabaseDriver {
         }
         //user.close();
         return result;
+    }
+
+    public static void printTables()    {
+        AccessSQL printQuerie = new AccessSQL(databasePath);
+        System.out.println("ASSIGN DOCTOR");
+        printQuerie.sqlQuery("SELECT * FROM AssignDoctor");
+        System.out.println("\nDIAGNOSE");
+        printQuerie.sqlQuery("SELECT * FROM Diagnose");
+        System.out.println("\nDIAGNOSIS");
+        printQuerie.sqlQuery("SELECT * FROM Diagnosis");
+        System.out.println("\nEMPLOYEE");
+        printQuerie.sqlQuery("SELECT * FROM Employee");
+        System.out.println("\nINPATIENT");
+        printQuerie.sqlQuery("SELECT * FROM InPatient");
+        System.out.println("\nOUTPATIENT");
+        printQuerie.sqlQuery("SELECT * FROM OutPatient");
+        System.out.println("\nPROCEDURE");
+        printQuerie.sqlQuery("SELECT * FROM Procedure");
+        System.out.println("\nROOM");
+        printQuerie.sqlQuery("SELECT * FROM Room");
+        System.out.println("\nTREAT");
+        printQuerie.sqlQuery("SELECT * FROM Treat");
+        System.out.println("\nTREATMENT");
+        printQuerie.sqlQuery("SELECT * FROM Treatment");
     }
 
     public static void queryMenu() {
@@ -196,7 +242,7 @@ public class DatabaseDriver {
                     "10 = Complete Patient History with Admission Details\n" +
                     "11 = Main Menu\n" +
                     "=============\n" +
-                    "Please Make a Selection:\n");
+                    "Please Make a Selection:");
             int selection = menuChoice();
             switch (selection) {
                 case 1:
@@ -222,7 +268,8 @@ public class DatabaseDriver {
                     //simpleQuery(queries[9]);
                     break;
                 case 8:
-                    simpleQuery(queries[10]);
+                    patientTreatments();
+                    //simpleQuery(queries[10]);
                     break;
                 case 9:
                     simpleQuery(queries[11]);
@@ -272,20 +319,24 @@ public class DatabaseDriver {
 
     }
 
-    public static void patientAdmissions()   {
+    public static int patientNameNum() {
+
         boolean loop = true;
         int selection = 0;
-        while (loop)    {
+        while (loop) {
             loop = false;
             System.out.println("1 = Search Patient by Name\n" +
                     "2 = Search Patient by ID Number");
             selection = menuChoice();
-            if (selection != 1 && selection != 2)   {
+            if (selection != 1 && selection != 2) {
                 System.out.println("Invalid Input, Must select 1 or 2");
                 loop = true;
             }
         }
-
+        return selection;
+    }
+    public static void patientAdmissions() {
+        int selection = patientNameNum();
         if (selection == 1) {
             System.out.println("Please Enter Patient's Last Name:");
             String temp = getUserString();
@@ -294,7 +345,7 @@ public class DatabaseDriver {
                     "FROM InPatient\n" +
                     "WHERE lastName = '" + temp + "';";
             simpleQuery(sql);
-            return;
+
         }
         else    {
             System.out.println("Please Enter Patient ID Number:");
@@ -303,7 +354,37 @@ public class DatabaseDriver {
                     "FROM InPatient\n" +
                     "WHERE patientID = '" + temp + "';";
             simpleQuery(sql);
+
+        }
+    }
+
+    public static void patientTreatments()   {
+        int selection = patientNameNum();
+
+        if (selection == 1) {
+            simpleQuery(queries[10]);
+            /*
+            System.out.println("Please Enter Patient's Last Name:");
+            String temp = getUserString();
+            temp = temp.toUpperCase();
+            String sql = "SELECT admitDate, diagnosis\n" +
+                    "FROM InPatient\n" +
+                    "WHERE lastName = '" + temp + "';";
+            simpleQuery(sql);
+             */
+        }
+        else    {
+            simpleQuery(queries[10]);
+            /*
+            System.out.println("Please Enter Patient ID Number:");
+            String temp = getUserString();
+            String sql = "SELECT admitDate, diagnosis\n" +
+                    "FROM InPatient\n" +
+                    "WHERE patientID = '" + temp + "';";
+            simpleQuery(sql);
             return;
+             */
+
         }
     }
 
