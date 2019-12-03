@@ -122,7 +122,7 @@ public class DatabaseDriver {
                     menuRoom();
                     break;
                 case 2:
-                    System.out.println("2");
+                    menuPatient();
                     break;
                 case 3:
                     System.out.println("3");
@@ -182,21 +182,21 @@ public class DatabaseDriver {
     public static void menuPatient ()   {
         while (true) {
             System.out.println("====================================");
-            System.out.println("Ptient Information Query Menu");
+            System.out.println("Patient Information Query Menu");
             System.out.println("=============");
             System.out.println("1 = List of Patients\n" +
                     "2 = List of Patients Currently Admitted\n" +
                     "3 = List of Inpatients Within Date Range\n" +
-                    "4 = List of Patients Discharged Within Date Range" +
-                    "5 = Current Outpatients" +
-                    "6 = Outpatients Within Date Range" +
-                    "7 = Specific Inpatient/Diagnosis History" +
-                    "8 = Specific Patient Treatments" +
-                    "9 = History of Patients admitted Within 30 days of Last Discharge" +
-                    "10 = Complete Patient History with Admission Details" +
+                    "4 = List of Patients Discharged Within Date Range\n" +
+                    "5 = Current Outpatients\n" +
+                    "6 = Outpatients Within Date Range\n" +
+                    "7 = Specific Inpatient/Diagnosis History\n" +
+                    "8 = Specific Patient Treatments\n" +
+                    "9 = History of Patients admitted Within 30 days of Last Discharge\n" +
+                    "10 = Complete Patient History with Admission Details\n" +
                     "11 = Main Menu\n" +
                     "=============\n" +
-                    "Please Make a Selection:");
+                    "Please Make a Selection:\n");
             int selection = menuChoice();
             switch (selection) {
                 case 1:
@@ -206,19 +206,20 @@ public class DatabaseDriver {
                     simpleQuery(queries[4]);
                     break;
                 case 3:
-                    simpleQuery(queries[5]);
+                    dateQuery(queries[5]);
                     break;
                 case 4:
-                    simpleQuery(queries[6]);
+                    dateQuery(queries[6]);
                     break;
                 case 5:
                     simpleQuery(queries[7]);
                     break;
                 case 6:
-                    simpleQuery(queries[8]);
+                    dateQuery(queries[8]);
                     break;
                 case 7:
-                    simpleQuery(queries[9]);
+                    patientAdmissions();
+                    //simpleQuery(queries[9]);
                     break;
                 case 8:
                     simpleQuery(queries[10]);
@@ -238,11 +239,6 @@ public class DatabaseDriver {
         }
     }
 
-    public static int menuChoice()    {
-        Scanner user = new Scanner(System.in);
-        return user.nextInt();
-    }
-
     public static void simpleQuery(String sql) {
         AccessSQL printQuerie = new AccessSQL(databasePath);
         printQuerie.sqlQuery(sql);
@@ -251,6 +247,74 @@ public class DatabaseDriver {
             System.out.println("\n\nGoodbye........");
             System.exit(0);
         }
+    }
+
+    public static void dateQuery(String sql)    {
+        boolean loop = true;
+        String dateStart = "";
+        String dateEnd = "";
+
+        while (loop) {
+            loop = false;
+            System.out.println("Date Format MUST be YEAR-MO-DA, example 2019-07-01");
+            System.out.println("Enter the beginning date of date range:");
+            dateStart = getUserString();
+            System.out.println("Enter the end date of date range:");
+            dateEnd = getUserString();
+            if (dateStart.length() != 10 || dateEnd.length() != 10) {
+                System.out.println("INCORRECT DATE FORMAT RECEIVED, PLEASE RETRY");
+                loop = true;
+            }
+        }
+        sql = sql.replaceAll("DATE1", dateStart);
+        sql = sql.replaceAll("DATE2", dateEnd);
+        simpleQuery(sql);
+
+    }
+
+    public static void patientAdmissions()   {
+        boolean loop = true;
+        int selection = 0;
+        while (loop)    {
+            loop = false;
+            System.out.println("1 = Search Patient by Name\n" +
+                    "2 = Search Patient by ID Number");
+            selection = menuChoice();
+            if (selection != 1 && selection != 2)   {
+                System.out.println("Invalid Input, Must select 1 or 2");
+                loop = true;
+            }
+        }
+
+        if (selection == 1) {
+            System.out.println("Please Enter Patient's Last Name:");
+            String temp = getUserString();
+            temp = temp.toUpperCase();
+            String sql = "SELECT admitDate, diagnosis\n" +
+                    "FROM InPatient\n" +
+                    "WHERE lastName = '" + temp + "';";
+            simpleQuery(sql);
+            return;
+        }
+        else    {
+            System.out.println("Please Enter Patient ID Number:");
+            String temp = getUserString();
+            String sql = "SELECT admitDate, diagnosis\n" +
+                    "FROM InPatient\n" +
+                    "WHERE patientID = '" + temp + "';";
+            simpleQuery(sql);
+            return;
+        }
+    }
+
+    public static String getUserString()  {
+        Scanner user = new Scanner(System.in).useDelimiter("\n");
+        return user.next();
+    }
+
+    public static int menuChoice()    {
+        Scanner user = new Scanner(System.in);
+        return user.nextInt();
     }
 
     public static String[] queryListGen()   {
@@ -273,18 +337,18 @@ public class DatabaseDriver {
                 "WHERE inHospital = 1;";
         queries[5] ="SELECT patientID, firstName, lastName\n" +
                 "FROM InPatient\n" +
-                "WHERE admitDate > '2019-05-01'\n" +
-                "AND disDate < '2019-07-01';";
+                "WHERE admitDate > 'DATE1'\n" +
+                "AND disDate < 'DATE2';";
         queries[6] ="SELECT patientID, firstName, lastName\n" +
                 "FROM InPatient\n" +
-                "WHERE disDate BETWEEN '2019-05-01' AND '2019-07-01';";
+                "WHERE disDate BETWEEN 'DATE1' AND 'DATE2';";
         queries[7] ="SELECT patientID, firstName, lastName \n" +
                 "FROM OutPatient;";
         queries[8] ="SELECT patientid , firstName, lastName\n" +
                 "FROM outpatient left join treatment\n" +
                 "WHERE outpatient.lastname = treatment.patientname\n" +
-                "AND treatment.time > '2019-05-10'\n" +
-                "AND treatment.time < '2019-07-22' ;";
+                "AND treatment.time > 'DATE1'\n" +
+                "AND treatment.time < 'DATE2' ;";
         queries[9] ="SELECT admitDate, diagnosis\n" +
                 "FROM InPatient\n" +
                 "WHERE lastName = 'BONES'\n" +
