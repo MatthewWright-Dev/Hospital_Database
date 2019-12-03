@@ -174,7 +174,7 @@ public class DatabaseDriver {
                     menuDiagTreat();
                     break;
                 case 4:
-                    System.out.println("4");
+                    menuEmployee();
                     break;
                 case 5:
                     System.out.println("============\n\n" +
@@ -336,6 +336,49 @@ public class DatabaseDriver {
         }
     }
 
+    public static void menuEmployee ()   {
+        while (true) {
+            System.out.println("=============");
+            System.out.println("Employee Information Query Menu");
+            System.out.println("=============");
+            System.out.println("1 = All Hospital Workers \n" +
+                    "2 = Primary Doctors Of Patients With High Admission Rates \n" +
+                    "3 = Diagnoses by Doctor\n" +
+                    "4 = Ordered Treatments by Doctor\n" +
+                    "5 = Performed Treatments by Doctor\n" +
+                    "6 = Treatment History - All Employees Involved\n" +
+                    "7 = Main Menu\n" +
+                    "=============\n" +
+                    "Please Make a Selection:");
+            int selection = menuChoice();
+            switch (selection) {
+                case 1:
+                    simpleQuery(queries[21]);
+                    break;
+                case 2:
+                    simpleQuery(queries[22]);
+                    break;
+                case 3:
+                    getDoctor(queries[23]);
+                    break;
+                case 4:
+                    getDoctor(queries[24]);
+                    break;
+                case 5:
+                    getDoctor(queries[25]);
+                    break;
+                case 6:
+                    simpleQuery(queries[26]);
+                    break;
+                case 7:
+                    return;
+                default:
+                    System.out.println("Invalid Input.....");
+            }
+        }
+    }
+
+
     public static void simpleQuery(String sql) {
         AccessSQL printQuerie = new AccessSQL(databasePath);
         printQuerie.sqlQuery(sql);
@@ -369,6 +412,24 @@ public class DatabaseDriver {
 
     }
 
+    public static void getDoctor(String sql)    {
+        System.out.println("Enter the Doctor's Last Name:");
+        String name = getUserString();
+        name = name.toUpperCase();
+        sql = sql.replaceAll("DOCTORNAME", name);
+        simpleQuery(sql);
+    }
+
+    public static String getUserString()  {
+        Scanner user = new Scanner(System.in).useDelimiter("\n");
+        return user.next();
+    }
+
+    public static int menuChoice()    {
+        Scanner user = new Scanner(System.in);
+        return user.nextInt();
+    }
+
     public static int patientNameNum() {
 
         boolean loop = true;
@@ -385,6 +446,7 @@ public class DatabaseDriver {
         }
         return selection;
     }
+
     public static void patientAdmissions() {
         int selection = patientNameNum();
         if (selection == 1) {
@@ -412,19 +474,29 @@ public class DatabaseDriver {
         int selection = patientNameNum();
 
         if (selection == 1) {
-            simpleQuery(queries[10]);
-            /*
-            System.out.println("Please Enter Patient's Last Name:");
+            System.out.println("Enter the Patient's Last Name:");
             String temp = getUserString();
             temp = temp.toUpperCase();
-            String sql = "SELECT admitDate, diagnosis\n" +
-                    "FROM InPatient\n" +
-                    "WHERE lastName = '" + temp + "';";
+            String sql = "SELECT InPatient.admitDate, Treatment.patientName, Treatment.docRequest, Treatment.treatType, Treatment.treatment, Treatment.time, Treatment.treatID\n" +
+                    "FROM Treatment LEFT JOIN InPatient \n" +
+                    "WHERE InPatient.lastName = Treatment.patientName\n" +
+                    "AND inpatient.lastName = '" + temp + "'\n" +
+                    "GROUP BY InPatient.admitDate\n" +
+                    "ORDER BY InPatient.admitDate DESC, Treatment.time ASC;";
             simpleQuery(sql);
-             */
+
         }
         else    {
-            simpleQuery(queries[10]);
+            System.out.println("Enter the Patient ID Number:");
+            String temp = getUserString();
+            temp = temp.toUpperCase();
+            String sql = "SELECT InPatient.admitDate, Treatment.patientName, Treatment.docRequest, Treatment.treatType, Treatment.treatment, Treatment.time, Treatment.treatID\n" +
+                    "FROM Treatment LEFT JOIN InPatient \n" +
+                    "WHERE InPatient.lastName = Treatment.patientName\n" +
+                    "AND inpatient.patientID = '" + temp + "'\n" +
+                    "GROUP BY InPatient.admitDate\n" +
+                    "ORDER BY InPatient.admitDate DESC, Treatment.time ASC;";
+            simpleQuery(sql);
             /*
             System.out.println("Please Enter Patient ID Number:");
             String temp = getUserString();
@@ -436,16 +508,6 @@ public class DatabaseDriver {
              */
 
         }
-    }
-
-    public static String getUserString()  {
-        Scanner user = new Scanner(System.in).useDelimiter("\n");
-        return user.next();
-    }
-
-    public static int menuChoice()    {
-        Scanner user = new Scanner(System.in);
-        return user.nextInt();
     }
 
     public static String[] queryListGen()   {
@@ -538,15 +600,15 @@ public class DatabaseDriver {
                 "GROUP BY primDoc;";
         queries[23] ="SELECT doctor, disease, cases\n" +
                 "FROM diagnose\n" +
-                "WHERE doctor = 'SANTOS'\n" +
+                "WHERE doctor = 'DOCTORNAME'\n" +
                 "ORDER BY cases DESC;";
         queries[24] = "SELECT doctor, treatment, cases\n" +
                 "FROM Treat\n" +
-                "WHERE doctor = 'SANTOS'\n" +
+                "WHERE doctor = 'DOCTORNAME'\n" +
                 "ORDER BY cases DESC;";
         queries[25] ="SELECT doctor, treatment, cases\n" +
                 "FROM Treat\n" +
-                "WHERE doctor = 'SANTOS'\n" +
+                "WHERE doctor = 'DOCTORNAME'\n" +
                 "ORDER BY cases DESC;";
         queries[26] = "SELECT Treatment.patientName, Treatment.docRequest, Employee.firstName, Employee.title\n" +
                 "FROM Treatment LEFT JOIN Employee\n" +
