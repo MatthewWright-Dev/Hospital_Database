@@ -150,9 +150,9 @@ public class DatabaseDriver {
     public static void queryMenu() {
         //Print the Menu Header
         boolean cont = true;
-        System.out.println("\n*****  Phase 2: DATABASE QUERY *****");
+        System.out.println("\n*****  Phase 2: DATABASE QUERY *****\n");
         while (cont) {
-            System.out.println("====================================");
+            System.out.println("=============");
             System.out.println("Main Menu");
             System.out.println("=============");
             System.out.println("1 = Room Utilization\n" +
@@ -171,7 +171,7 @@ public class DatabaseDriver {
                     menuPatient();
                     break;
                 case 3:
-                    System.out.println("3");
+                    menuDiagTreat();
                     break;
                 case 4:
                     System.out.println("4");
@@ -197,9 +197,9 @@ public class DatabaseDriver {
 
     public static void menuRoom()  {
         while (true) {
-            System.out.println("====================================");
+            System.out.println("===============");
             System.out.println("Room Query Menu");
-            System.out.println("=============");
+            System.out.println("===============");
             System.out.println("1 = List of Occupied Rooms\n" +
                     "2 = List of Unoccupied Rooms\n" +
                     "3 = List of All Rooms with Patient Names and Admission Dates\n" +
@@ -227,7 +227,7 @@ public class DatabaseDriver {
 
     public static void menuPatient ()   {
         while (true) {
-            System.out.println("====================================");
+            System.out.println("=============");
             System.out.println("Patient Information Query Menu");
             System.out.println("=============");
             System.out.println("1 = List of Patients\n" +
@@ -280,6 +280,56 @@ public class DatabaseDriver {
                 case 11:
                     return;
 
+                default:
+                    System.out.println("Invalid Input.....");
+            }
+        }
+    }
+
+    public static void menuDiagTreat ()   {
+        while (true) {
+            System.out.println("=============");
+            System.out.println("Diagnosis and Treatment Query Menu");
+            System.out.println("=============");
+            System.out.println("1 = Prevalence of Diagnosis in Admitted Patients \n" +
+                    "2 = Prevalence of Diagnosis in Outpatients \n" +
+                    "3 = Prevalence of Diagnosis in All Patients \n" +
+                    "4 = Treatment History - All Hospital\n" +
+                    "5 = Treatment History - Admitted Patients\n" +
+                    "6 = Treatment History - Outpatients\n" +
+                    "7 = Chronic Inpatient Diagnosis History\n" +
+                    "8 = Patient Treatments with Employee Information\n" +
+                    "9 = Main Menu\n" +
+                    "=============\n" +
+                    "Please Make a Selection:");
+            int selection = menuChoice();
+            switch (selection) {
+                case 1:
+                    simpleQuery(queries[13]);
+                    break;
+                case 2:
+                    simpleQuery(queries[14]);
+                    break;
+                case 3:
+                    simpleQuery(queries[15]);
+                    break;
+                case 4:
+                    simpleQuery(queries[16]);
+                    break;
+                case 5:
+                    simpleQuery(queries[17]);
+                    break;
+                case 6:
+                    simpleQuery(queries[18]);
+                    break;
+                case 7:
+                    simpleQuery(queries[19]);
+                    break;
+                case 8:
+                    simpleQuery(queries[20]);
+                    break;
+                case 9:
+                    return;
                 default:
                     System.out.println("Invalid Input.....");
             }
